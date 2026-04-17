@@ -1,0 +1,94 @@
+package events
+
+import (
+	"fmt"
+	"go-huginn-clone/components"
+	"go-huginn-clone/components/layouts"
+	"go-huginn-clone/models"
+)
+
+templ Index(props layouts.PageProps, eventList []models.Event, pagination models.Pagination, agent *models.Agent, hlParam string) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="page-header">
+						<span class="h2">
+							Your Events
+							if agent != nil {
+								from { agent.Name }
+							}
+						</span>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-striped table-row-middle events">
+							<tr>
+								if agent == nil {
+									<th>Source</th>
+								}
+								<th>Created</th>
+								<th>Payload</th>
+								<th></th>
+							</tr>
+							for _, event := range eventList {
+								if event.Agent != nil {
+									<tr class={ highlightClass(event.ID, hlParam) }>
+										if agent == nil {
+											<td>
+												<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d?return=/events", event.AgentID)) }>
+													{ event.Agent.Name }
+												</a>
+											</td>
+										}
+										<td title={ event.CreatedAt.String() }>
+											{ components.TimeAgo(event.CreatedAt) } ago
+										</td>
+										<td class="payload">
+											{ components.Truncate(components.PrettyJSON(event.Payload), 90) }
+										</td>
+										<td>
+											<div class="btn-group btn-group-xs">
+												<a href={ templ.SafeURL(fmt.Sprintf("/events/%d?return=/events", event.ID)) } class="btn btn-default">Show</a>
+												<a
+													href={ templ.SafeURL(fmt.Sprintf("/events/%d/reemit", event.ID)) }
+													class="btn btn-default"
+													data-method="post"
+													data-confirm="Are you sure you want to duplicate this event and emit the new one now?"
+												>Re-emit</a>
+												<a
+													href={ templ.SafeURL(fmt.Sprintf("/events/%d", event.ID)) }
+													class="btn btn-default"
+													data-method="delete"
+													data-confirm="Are you sure?"
+												>Delete</a>
+											</div>
+										</td>
+									</tr>
+								}
+							}
+						</table>
+					</div>
+					@components.Paginate(pagination)
+					<br/>
+					if agent != nil {
+						<div class="btn-group">
+							<a href="/agents" class="btn btn-default">
+								<span class="glyphicon glyphicon-chevron-left"></span> Back
+							</a>
+							<a href="/events" class="btn btn-default">
+								<span class="glyphicon glyphicon-random"></span> See all events
+							</a>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	}
+}
+
+func highlightClass(id int, hlParam string) string {
+	if fmt.Sprintf("%d", id) == hlParam {
+		return "hl"
+	}
+	return ""
+}

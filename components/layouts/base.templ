@@ -1,0 +1,121 @@
+package layouts
+
+import (
+	"go-huginn-clone/models"
+)
+
+// PageProps holds page-level metadata passed from handlers
+type PageProps struct {
+	Title          string
+	CurrentUser    *models.User
+	Flash          []models.FlashMessage
+	CurrentPath    string
+	ExtraHead      string // raw HTML for <head> (e.g. Google Maps script)
+	LoadAceEditor  bool
+	LoadJSONEditor bool
+	LoadDiagram    bool
+	LoadGraphing   bool
+}
+
+templ Base(props PageProps) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			if props.Title != "" {
+				<title>{ props.Title } - Huginn</title>
+			} else {
+				<title>Huginn</title>
+			}
+			<meta name="description" content=""/>
+			<meta name="author" content=""/>
+			<!-- Favicons -->
+			<link rel="apple-touch-icon" sizes="57x57" href="/static/apple-touch-icon-57x57.png"/>
+			<link rel="apple-touch-icon" sizes="60x60" href="/static/apple-touch-icon-60x60.png"/>
+			<link rel="apple-touch-icon" sizes="72x72" href="/static/apple-touch-icon-72x72.png"/>
+			<link rel="apple-touch-icon" sizes="76x76" href="/static/apple-touch-icon-76x76.png"/>
+			<link rel="apple-touch-icon" sizes="114x114" href="/static/apple-touch-icon-114x114.png"/>
+			<link rel="apple-touch-icon" sizes="120x120" href="/static/apple-touch-icon-120x120.png"/>
+			<link rel="apple-touch-icon" sizes="144x144" href="/static/apple-touch-icon-144x144.png"/>
+			<link rel="apple-touch-icon" sizes="152x152" href="/static/apple-touch-icon-152x152.png"/>
+			<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon-180x180.png"/>
+			<link rel="icon" type="image/vnd.microsoft.icon" href="/static/favicon.ico" sizes="16x16"/>
+			<link rel="icon" type="image/png" href="/static/android-chrome-48x48.png" sizes="48x48"/>
+			<link rel="icon" type="image/png" href="/static/android-chrome-192x192.png" sizes="192x192"/>
+			<link rel="manifest" href="/static/manifest.json"/>
+			<!-- Bootstrap 3 CSS (CDN) -->
+			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"/>
+			<!-- Font Awesome 6 (CDN) -->
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+			<!-- Select2 CSS -->
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css"/>
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css"/>
+			<!-- Spectrum color picker -->
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.css"/>
+			<!-- Application CSS -->
+			<link rel="stylesheet" href="/static/css/application.css"/>
+			if props.LoadDiagram {
+				<link rel="stylesheet" href="/static/css/diagram.css"/>
+			}
+			<!-- CSRF meta tag (for AJAX) -->
+			<meta name="csrf-token" content="mock-csrf-token"/>
+			if props.ExtraHead != "" {
+				@templ.Raw(props.ExtraHead)
+			}
+		</head>
+		<body>
+			<!-- Fixed top navbar -->
+			<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+				<div class="container">
+					@Navigation(props)
+				</div>
+			</nav>
+			<!-- Main content -->
+			<div id="main" role="main">
+				<div class="container">
+					<div class="row">
+						@Messages(props.Flash)
+					</div>
+				</div>
+				<div id="main-content">
+					{ children... }
+				</div>
+			</div>
+			<!-- Bootstrap 3 JS (CDN) -->
+			<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+			<!-- Select2 JS -->
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js"></script>
+			<!-- Typeahead JS -->
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js"></script>
+			<!-- Spectrum JS -->
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.js"></script>
+			if props.LoadAceEditor {
+				<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ace.js"></script>
+				<script src="/static/js/ace.js"></script>
+			}
+			if props.LoadJSONEditor {
+				<script src="/static/js/json-editor-loader.js"></script>
+			}
+			if props.LoadDiagram {
+				<script src="/static/js/diagram.js"></script>
+			}
+			if props.LoadGraphing {
+				<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+				<script src="/static/js/graphing.js"></script>
+			}
+			<!-- Application JS -->
+			<script src="/static/js/application.js"></script>
+			<!-- Inline agent data for Typeahead search -->
+			<script>
+				window.agentPaths = {};
+				window.agentNames = [];
+				if (typeof agentData !== 'undefined') {
+					$.extend(window.agentPaths, agentData);
+					$.each(window.agentPaths, function(name) { window.agentNames.push(name); });
+				}
+			</script>
+		</body>
+	</html>
+}

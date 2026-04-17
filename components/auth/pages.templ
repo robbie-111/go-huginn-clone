@@ -1,0 +1,188 @@
+package auth
+
+import (
+	"go-huginn-clone/components/layouts"
+	"go-huginn-clone/models"
+)
+
+templ LoginPage(props layouts.PageProps, errors []string) {
+	@layouts.Base(props) {
+		<div class="row">
+			<div class="col-md-6 col-md-offset-3">
+				<div class="well">
+					<h2>Log in</h2>
+					if len(errors) > 0 {
+						for _, e := range errors {
+							<div class="alert alert-danger">{ e }</div>
+						}
+					}
+					<form class="form-horizontal" role="form" action="/users/sign_in" method="POST">
+						<input type="hidden" name="csrf_token" value="mock-csrf-token"/>
+						<div class="form-group">
+							<label class="col-md-2 col-md-offset-2 control-label" for="user_login">Login</label>
+							<div class="col-md-6">
+								<input type="text" name="user[login]" id="user_login" autofocus class="form-control"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-md-2 col-md-offset-2 control-label" for="user_password">Password</label>
+							<div class="col-md-6">
+								<input type="password" name="user[password]" id="user_password" class="form-control"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="col-md-offset-4 col-md-10">
+								<div class="checkbox">
+									<label>
+										<input type="checkbox" name="user[remember_me]"/> Remember me
+									</label>
+								</div>
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="col-md-offset-4 col-md-10">
+								<input type="submit" value="Log in" class="btn btn-default"/>
+							</div>
+						</div>
+					</form>
+					<hr/>
+					<p>
+						<a href="/users/sign_up">Sign up</a>
+					</p>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ RegisterPage(props layouts.PageProps, errors []string) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 col-md-offset-2">
+					<div class="well">
+						<h2>Sign up</h2>
+						if len(errors) > 0 {
+							for _, e := range errors {
+								<div class="alert alert-danger">{ e }</div>
+							}
+						}
+						<form class="form-horizontal" action="/users" method="POST">
+							<input type="hidden" name="csrf_token" value="mock-csrf-token"/>
+							<div class="form-group">
+								<label class="col-md-4 control-label" for="user_email">Email</label>
+								<div class="col-md-6">
+									<input type="email" name="user[email]" id="user_email" class="form-control"/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-md-4 control-label" for="user_username">Username</label>
+								<div class="col-md-6">
+									<input type="text" name="user[username]" id="user_username" class="form-control"/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-md-4 control-label" for="user_password">Password</label>
+								<div class="col-md-6">
+									<input type="password" name="user[password]" id="user_password" class="form-control"/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-md-4 control-label" for="user_password_confirmation">Password Confirmation</label>
+								<div class="col-md-6">
+									<input type="password" name="user[password_confirmation]" id="user_password_confirmation" class="form-control"/>
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="col-md-offset-4 col-md-10">
+									<input type="submit" value="Sign up" class="btn btn-primary"/>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ AccountEditPage(props layouts.PageProps, user models.User, errors []string) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 col-md-offset-2">
+					<div class="well">
+						<h2>Edit Account</h2>
+						if len(errors) > 0 {
+							for _, e := range errors {
+								<div class="alert alert-danger">{ e }</div>
+							}
+						}
+						<form class="form-horizontal" action="/users" method="POST">
+							<input type="hidden" name="_method" value="PUT"/>
+							<input type="hidden" name="csrf_token" value="mock-csrf-token"/>
+							<div class="form-group">
+								<label class="col-md-4 control-label" for="user_email">Email</label>
+								<div class="col-md-6">
+									<input type="email" name="user[email]" id="user_email" class="form-control" value={ user.Email }/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-md-4 control-label" for="user_username">Username</label>
+								<div class="col-md-6">
+									<input type="text" name="user[username]" id="user_username" class="form-control" value={ user.Username }/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-md-4 control-label" for="user_current_password">Current Password</label>
+								<div class="col-md-6">
+									<input type="password" name="user[current_password]" id="user_current_password" class="form-control"/>
+									<span class="help-inline">We need your current password to confirm your changes.</span>
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="col-md-offset-4 col-md-10">
+									<input type="submit" value="Update" class="btn btn-primary"/>
+								</div>
+							</div>
+						</form>
+						<h3>Change password</h3>
+						<form class="form-horizontal" action="/users/password" method="POST">
+							<input type="hidden" name="_method" value="PUT"/>
+							<input type="hidden" name="csrf_token" value="mock-csrf-token"/>
+							<div class="form-group">
+								<label class="col-md-4 control-label" for="password_current">Current Password</label>
+								<div class="col-md-6">
+									<input type="password" name="user[current_password]" id="password_current" class="form-control"/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-md-4 control-label" for="password_new">New Password</label>
+								<div class="col-md-6">
+									<input type="password" name="user[password]" id="password_new" class="form-control" autocomplete="off"/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-md-4 control-label" for="password_confirm">Confirm New Password</label>
+								<div class="col-md-6">
+									<input type="password" name="user[password_confirmation]" id="password_confirm" class="form-control" autocomplete="off"/>
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="col-md-offset-4 col-md-10">
+									<input type="submit" value="Update" class="btn btn-primary"/>
+								</div>
+							</div>
+						</form>
+						<hr/>
+						<h3>Cancel my account</h3>
+						<p>
+							Unhappy?
+							<a href="/users" data-method="delete" data-confirm="Are you sure?">Cancel my account</a>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}

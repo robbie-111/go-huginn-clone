@@ -1,0 +1,139 @@
+package agents
+
+import (
+	"fmt"
+	"go-huginn-clone/components"
+	"go-huginn-clone/models"
+)
+
+templ Table(agentList []models.Agent, pagination models.Pagination, sortCol, sortDir, returnTo string) {
+	<div class="table-responsive">
+		<table class="table table-striped table-row-middle">
+			<tr>
+				<th></th>
+				<th>
+					@components.SortableColumn(sortCol, sortDir, "name", "asc", "Name", "/agents")
+				</th>
+				<th>
+					@components.SortableColumn(sortCol, sortDir, "created_at", "desc", "Age", "/agents")
+				</th>
+				<th>Schedule</th>
+				<th>
+					@components.SortableColumn(sortCol, sortDir, "last_check_at", "desc", "Last Check", "/agents")
+				</th>
+				<th>
+					@components.SortableColumn(sortCol, sortDir, "last_event_at", "desc", "Last Event Out", "/agents")
+				</th>
+				<th>
+					@components.SortableColumn(sortCol, sortDir, "last_receive_at", "desc", "Last Event In", "/agents")
+				</th>
+				<th>Events Created</th>
+				<th>Working?</th>
+				<th></th>
+			</tr>
+			for _, agent := range agentList {
+				<tr>
+					<!-- Icon -->
+					<td class={ unavailableClass(agent) }>
+						@components.AgentTypeIcon(agent)
+					</td>
+					<!-- Name + Type + Scenarios -->
+					<td class={ unavailableClass(agent) }>
+						<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d?return=%s", agent.ID, returnTo)) }>
+							{ agent.Name }
+						</a>
+						<br/>
+						<span class="text-muted">{ agent.ShortType }</span>
+						if len(agent.Scenarios) > 0 {
+							<span>
+								for _, scenario := range agent.Scenarios {
+									&nbsp;
+									@components.ScenarioLabel(scenario)
+								}
+							</span>
+						}
+					</td>
+					<!-- Age -->
+					<td class={ unavailableClass(agent) }>
+						{ components.TimeAgo(agent.CreatedAt) }
+					</td>
+					<!-- Schedule -->
+					<td class={ unavailableClass(agent) }>
+						if agent.CanBeScheduled {
+							{ components.AgentScheduleName(agent.Schedule) }
+						} else {
+							<span class="not-applicable"></span>
+						}
+					</td>
+					<!-- Last Check -->
+					<td class={ unavailableClass(agent) }>
+						if agent.CanBeScheduled {
+							if agent.LastCheckAt != nil {
+								{ components.TimeAgo(*agent.LastCheckAt) } ago
+							} else {
+								never
+							}
+						} else {
+							<span class="not-applicable"></span>
+						}
+					</td>
+					<!-- Last Event Out -->
+					<td class={ unavailableClass(agent) }>
+						if agent.CanCreateEvents {
+							if agent.LastEventAt != nil {
+								{ components.TimeAgo(*agent.LastEventAt) } ago
+							} else {
+								never
+							}
+						} else {
+							<span class="not-applicable"></span>
+						}
+					</td>
+					<!-- Last Event In -->
+					<td class={ unavailableClass(agent) }>
+						if agent.CanReceiveEvents {
+							if agent.LastReceiveAt != nil {
+								{ components.TimeAgo(*agent.LastReceiveAt) } ago
+							} else {
+								never
+							}
+						} else {
+							<span class="not-applicable"></span>
+						}
+					</td>
+					<!-- Events Created -->
+					<td class={ unavailableClass(agent) }>
+						if agent.CanCreateEvents {
+							<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d/events", agent.ID)) }>
+								{ fmt.Sprintf("%d", agent.EventsCount) }
+							</a>
+						} else {
+							<span class="not-applicable"></span>
+						}
+					</td>
+					<!-- Working? -->
+					<td>
+						@components.WorkingStatus(agent)
+					</td>
+					<!-- Actions -->
+					<td>
+						<div class="btn-group">
+							<button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+								<span class="glyphicon glyphicon-th-list"></span> Actions <span class="caret"></span>
+							</button>
+							@ActionMenu(agent, returnTo)
+						</div>
+					</td>
+				</tr>
+			}
+		</table>
+	</div>
+	@components.Paginate(pagination)
+}
+
+func unavailableClass(agent models.Agent) string {
+	if agent.Unavailable() {
+		return "agent-unavailable"
+	}
+	return ""
+}

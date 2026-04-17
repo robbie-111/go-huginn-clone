@@ -1,0 +1,212 @@
+package scenarios
+
+import (
+	"fmt"
+	"go-huginn-clone/components/layouts"
+	"go-huginn-clone/models"
+)
+
+templ NewPage(props layouts.PageProps, scenario models.Scenario) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="page-header">
+						<h2>Create a new Scenario</h2>
+					</div>
+					@ScenarioForm(scenario, true)
+					<hr/>
+					<div class="row">
+						<div class="col-md-12">
+							<a href="/scenarios" class="btn btn-default">
+								<span class="glyphicon glyphicon-chevron-left"></span> Back
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ EditPage(props layouts.PageProps, scenario models.Scenario) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="page-header">
+						<h2>Edit Scenario</h2>
+					</div>
+					@ScenarioForm(scenario, false)
+					<hr/>
+					<div class="row">
+						<div class="col-md-12">
+							<a href="/scenarios" class="btn btn-default">
+								<span class="glyphicon glyphicon-chevron-left"></span> Back
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ ScenarioForm(scenario models.Scenario, isNew bool) {
+	if len(scenario.Agents) == 0 && !isNew {
+	}
+	<form action={ scenarioFormAction(scenario, isNew) } method="POST">
+		if !isNew {
+			<input type="hidden" name="_method" value="PUT"/>
+		}
+		<input type="hidden" name="csrf_token" value="mock-csrf-token"/>
+		<div class="row">
+			<div class="col-md-4">
+				<div class="form-group">
+					<label for="scenario_name">Name</label>
+					<input
+						type="text"
+						name="scenario[name]"
+						id="scenario_name"
+						class="form-control"
+						placeholder="Name your Scenario"
+						value={ scenario.Name }
+					/>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="form-group">
+					<label for="scenario_tag_bg_color">Tag Background Color</label>
+					<input
+						type="color"
+						name="scenario[tag_bg_color]"
+						id="scenario_tag_bg_color"
+						class="form-control"
+						value={ bgColor(scenario) }
+					/>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="form-group">
+					<label for="scenario_tag_fg_color">Tag Foreground Color</label>
+					<input
+						type="color"
+						name="scenario[tag_fg_color]"
+						id="scenario_tag_fg_color"
+						class="form-control"
+						value={ fgColor(scenario) }
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-8">
+				<div class="form-group">
+					<label for="scenario_description">Optional Description</label>
+					<textarea
+						name="scenario[description]"
+						id="scenario_description"
+						class="form-control"
+						rows="4"
+						placeholder="Describe this Scenario..."
+					>{ scenario.Description }</textarea>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-4">
+				<div class="form-group">
+					<label>
+						<input
+							type="checkbox"
+							name="scenario[public]"
+							value="1"
+							checked?={ scenario.Public }
+						/>
+						Make this Scenario public
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<div class="form-actions">
+					if isNew {
+						<input type="submit" value="Create Scenario" class="btn btn-primary"/>
+					} else {
+						<input type="submit" value="Update Scenario" class="btn btn-primary"/>
+					}
+				</div>
+			</div>
+		</div>
+	</form>
+}
+
+templ SharePage(props layouts.PageProps, scenario models.Scenario, exportURL string) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="page-header">
+						<h2>Share { scenario.Name } with the world</h2>
+					</div>
+					<p>
+						<strong>Please be sure that none of the Agents in this Scenario have sensitive data in their settings before sharing!</strong>
+					</p>
+					if scenario.Public {
+						<p>
+							This Scenario is public. You can
+							<a href={ templ.SafeURL(fmt.Sprintf("/scenarios/%d/export.json", scenario.ID)) }>
+								download and share your export file
+							</a>, or give out this URL:
+						</p>
+						<form onsubmit="return false;">
+							<input
+								type="text"
+								class="form-control"
+								value={ exportURL }
+								onclick="return this.select();"
+							/>
+						</form>
+					} else {
+						<p>
+							This Scenario is not public. You can share it by
+							<a href={ templ.SafeURL(fmt.Sprintf("/scenarios/%d/export.json", scenario.ID)) }>
+								downloading and sharing your export file
+							</a>.
+						</p>
+					}
+					<hr/>
+					<div class="row">
+						<div class="col-md-12">
+							<a href={ templ.SafeURL(fmt.Sprintf("/scenarios/%d", scenario.ID)) } class="btn btn-default">
+								<span class="glyphicon glyphicon-chevron-left"></span> Back
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+func scenarioFormAction(scenario models.Scenario, isNew bool) templ.SafeURL {
+	if isNew {
+		return "/scenarios"
+	}
+	return templ.SafeURL(fmt.Sprintf("/scenarios/%d", scenario.ID))
+}
+
+func bgColor(s models.Scenario) string {
+	if s.TagBgColor != "" {
+		return s.TagBgColor
+	}
+	return "#5bc0de"
+}
+
+func fgColor(s models.Scenario) string {
+	if s.TagFgColor != "" {
+		return s.TagFgColor
+	}
+	return "#ffffff"
+}

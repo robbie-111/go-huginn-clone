@@ -1,0 +1,157 @@
+package scenarios
+
+import (
+	"fmt"
+	"go-huginn-clone/components"
+	"go-huginn-clone/components/agents"
+	"go-huginn-clone/components/layouts"
+	"go-huginn-clone/models"
+)
+
+templ Index(props layouts.PageProps, scenarioList []models.Scenario, pagination models.Pagination, sortCol, sortDir string) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="page-header">
+						<h2>Your Scenarios</h2>
+					</div>
+					<blockquote>
+						Scenarios are named groups of Agents. Scenarios allow you to organize your agents,
+						and to import and export sets of Agents to share.
+					</blockquote>
+					<table class="table table-striped table-row-middle">
+						<tr>
+							<th>
+								@components.SortableColumn(sortCol, sortDir, "name", "asc", "Name", "/scenarios")
+							</th>
+							<th>Agents</th>
+							<th>
+								@components.SortableColumn(sortCol, sortDir, "public", "desc", "Public", "/scenarios")
+							</th>
+							<th></th>
+						</tr>
+						for _, scenario := range scenarioList {
+							<tr>
+								<td>
+									@components.ScenarioLabel(scenario)
+									<a href={ templ.SafeURL(fmt.Sprintf("/scenarios/%d", scenario.ID)) }>
+										{ scenario.Name }
+									</a>
+								</td>
+								<td>
+									<a href={ templ.SafeURL(fmt.Sprintf("/scenarios/%d", scenario.ID)) }>
+										{ components.Pluralize(len(scenario.Agents), "agent") }
+									</a>
+								</td>
+								<td>
+									if scenario.Public {
+										yes
+									} else {
+										no
+									}
+								</td>
+								<td>
+									<div class="btn-group btn-group-xs" style="float:right;">
+										<a href={ templ.SafeURL(fmt.Sprintf("/scenarios/%d", scenario.ID)) } class="btn btn-default">Show</a>
+										<a href={ templ.SafeURL(fmt.Sprintf("/scenarios/%d/edit", scenario.ID)) } class="btn btn-default">Edit</a>
+										<a href={ templ.SafeURL(fmt.Sprintf("/scenarios/%d/share", scenario.ID)) } class="btn btn-default">Share</a>
+										<a
+											href="#"
+											class="btn btn-default"
+											data-toggle="modal"
+											data-target={ fmt.Sprintf("#confirm-scenario-deletion-%d", scenario.ID) }
+										>Delete</a>
+									</div>
+									@ConfirmDeletionModal(scenario)
+								</td>
+							</tr>
+						}
+					</table>
+					@components.Paginate(pagination)
+					<br/>
+					<div class="btn-group">
+						<a href="/scenarios/new" class="btn btn-default">
+							<span class="glyphicon glyphicon-plus"></span> New Scenario
+						</a>
+						<a href="/scenario_imports/new" class="btn btn-default">
+							<span class="glyphicon glyphicon-cloud-upload"></span> Import Scenario
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ Show(props layouts.PageProps, scenario models.Scenario, agentList []models.Agent, pagination models.Pagination, sortCol, sortDir string) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="page-header">
+						<h2>
+							@components.ScenarioLabel(scenario)
+							if scenario.Public {
+								Public
+							}
+							Scenario
+						</h2>
+					</div>
+					if scenario.Description != "" {
+						<blockquote>{ scenario.Description }</blockquote>
+					}
+					@agents.Table(agentList, pagination, sortCol, sortDir, fmt.Sprintf("/scenarios/%d", scenario.ID))
+					<br/>
+					<div class="btn-group">
+						<a href="/scenarios" class="btn btn-default">
+							<span class="glyphicon glyphicon-chevron-left"></span> Back
+						</a>
+						<a href={ templ.SafeURL(fmt.Sprintf("/agents/new?scenario_id=%d", scenario.ID)) } class="btn btn-default">
+							<span class="glyphicon glyphicon-plus"></span> New Agent
+						</a>
+						<a href={ templ.SafeURL(fmt.Sprintf("/scenarios/%d/diagram", scenario.ID)) } class="btn btn-default">
+							<span class="glyphicon glyphicon-random"></span> View Diagram
+						</a>
+						<a href={ templ.SafeURL(fmt.Sprintf("/scenarios/%d/edit", scenario.ID)) } class="btn btn-default">
+							<span class="glyphicon glyphicon-edit"></span> Edit
+						</a>
+						<a href={ templ.SafeURL(fmt.Sprintf("/scenarios/%d/share", scenario.ID)) } class="btn btn-default">
+							<span class="glyphicon glyphicon-share-alt"></span> Share
+						</a>
+						<a
+							href="#"
+							class="btn btn-default"
+							data-toggle="modal"
+							data-target={ fmt.Sprintf("#confirm-scenario-deletion-%d", scenario.ID) }
+						>
+							<span class="glyphicon glyphicon-trash"></span> Delete
+						</a>
+						<a
+							href="#"
+							class="btn btn-default"
+							data-toggle="modal"
+							data-target="#enable-disable-agents"
+							id="enable-all"
+						>
+							<span class="glyphicon glyphicon-play"></span> Enable all Agents
+						</a>
+						<a
+							href="#"
+							class="btn btn-default"
+							data-toggle="modal"
+							data-target="#enable-disable-agents"
+							id="disable-all"
+						>
+							<span class="glyphicon glyphicon-pause"></span> Disable all Agents
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		@ConfirmDeletionModal(scenario)
+		@EnableAgentsModal(scenario)
+	}
+}
+
+

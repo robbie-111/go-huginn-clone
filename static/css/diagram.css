@@ -1,0 +1,9 @@
+/* Diagram page CSS */
+.digraph {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+.digraph svg {
+  max-width: 100%;
+  height: auto;
+}

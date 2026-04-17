@@ -1,0 +1,72 @@
+package events
+
+import (
+	"fmt"
+	"go-huginn-clone/components"
+	"go-huginn-clone/components/layouts"
+	"go-huginn-clone/models"
+)
+
+templ Show(props layouts.PageProps, event models.Event) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="page-header">
+						<span class="h2">
+							if event.Agent != nil {
+								Event from { event.Agent.Name }
+							} else {
+								Event #{ fmt.Sprintf("%d", event.ID) }
+							}
+						</span>
+					</div>
+					<p>
+						<b>Expires in:</b>
+						if event.ExpiresAt != nil {
+							{ components.TimeAgo(*event.ExpiresAt) }
+						} else {
+							never
+						}
+					</p>
+					<p>
+						<b>Payload:</b>
+						<pre>{ components.PrettyJSON(event.Payload) }</pre>
+					</p>
+					if event.Lat != nil && event.Lng != nil {
+						<p>
+							<b>Lat:</b> { fmt.Sprintf("%f", *event.Lat) }
+							<br/>
+							<b>Lng:</b> { fmt.Sprintf("%f", *event.Lng) }
+						</p>
+						<div id="map_canvas" style="width:400px; height:300px;background:#eee;display:flex;align-items:center;justify-content:center;">
+							<span class="text-muted">Map: { fmt.Sprintf("%.4f, %.4f", *event.Lat, *event.Lng) }</span>
+						</div>
+					}
+					<br/>
+					<div class="btn-group">
+						<a href="/events" class="btn btn-default">
+							<span class="glyphicon glyphicon-chevron-left"></span> Back
+						</a>
+						<a
+							href={ templ.SafeURL(fmt.Sprintf("/events/%d/reemit", event.ID)) }
+							class="btn btn-default"
+							data-method="post"
+							data-confirm="Are you sure you want to duplicate this event and emit the new one now?"
+						>
+							<span class="glyphicon glyphicon-refresh"></span> Re-emit
+						</a>
+						<a
+							href={ templ.SafeURL(fmt.Sprintf("/events/%d", event.ID)) }
+							class="btn btn-default"
+							data-method="delete"
+							data-confirm="Are you sure?"
+						>
+							<span class="glyphicon glyphicon-remove" style="color:#d9534f;"></span> Delete
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}

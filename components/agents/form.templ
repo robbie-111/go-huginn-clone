@@ -1,0 +1,309 @@
+package agents
+
+import (
+	"encoding/json"
+	"fmt"
+	"go-huginn-clone/components/layouts"
+	"go-huginn-clone/models"
+)
+
+templ New(props layouts.PageProps, agent models.Agent, allAgents []models.Agent, agentTypes []string, schedules [][]string, retentionSchedules [][]string, scenarios []models.Scenario) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="page-header">
+						<h2>
+							Create a new Agent
+							<img src="/static/images/spinner-arrows.gif" class="spinner" id="agent-spinner" style="display:none;"/>
+						</h2>
+					</div>
+					<div id="agent-form">
+						@Form(agent, allAgents, agentTypes, schedules, retentionSchedules, scenarios, true)
+					</div>
+					<hr/>
+					<div class="row">
+						<div class="col-md-12">
+							<a href="/agents" class="btn btn-default">
+								<span class="glyphicon glyphicon-chevron-left"></span> Back
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ Edit(props layouts.PageProps, agent models.Agent, allAgents []models.Agent, agentTypes []string, schedules [][]string, retentionSchedules [][]string, scenarios []models.Scenario) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="page-header">
+						<h2>
+							Editing your { agent.ShortType }
+							<img src="/static/images/spinner-arrows.gif" class="spinner" id="agent-spinner" style="display:none;"/>
+						</h2>
+					</div>
+				</div>
+			</div>
+			<div id="agent-form">
+				@Form(agent, allAgents, agentTypes, schedules, retentionSchedules, scenarios, false)
+			</div>
+			<hr/>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="btn-group">
+						<a href="/agents" class="btn btn-default">
+							<span class="glyphicon glyphicon-chevron-left"></span> Back
+						</a>
+						<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d", agent.ID)) } class="btn btn-default">
+							<span class="glyphicon glyphicon-asterisk"></span> Show
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ Form(agent models.Agent, allAgents []models.Agent, agentTypes []string, schedules [][]string, retentionSchedules [][]string, scenarios []models.Scenario, isNew bool) {
+	if len(agent.Errors) > 0 {
+		<div class="row well model-errors">
+			<h2>{ fmt.Sprintf("%d", len(agent.Errors)) } error(s) prohibited this Agent from being saved:</h2>
+			for _, msg := range agent.Errors {
+				<p class="text-warning">{ msg }</p>
+			}
+		</div>
+	}
+	<form
+		class="agent-form"
+		action={ formAction(agent, isNew) }
+		method="POST"
+	>
+		if !isNew {
+			<input type="hidden" name="_method" value="PUT"/>
+		}
+		<input type="hidden" name="csrf_token" value="mock-csrf-token"/>
+		<div class="row">
+			<!-- Left column: settings -->
+			<div class="col-md-6">
+				<div class="row">
+					if isNew {
+						<div class="col-md-12">
+							<div class="form-group type-select">
+								<label for="agent_type">Type</label>
+								<select name="agent[type]" id="agent_type" class="form-control" autofocus>
+									<option value="">Select Agent Type...</option>
+									for _, t := range agentTypes {
+										<option value={ t } selected?={ agent.Type == t }>
+											{ agentTypeName(t) }
+										</option>
+									}
+								</select>
+							</div>
+						</div>
+					}
+					<div class="agent-settings">
+						<div class="col-md-12">
+							<div class="form-group">
+								<label for="agent_name">Name</label>
+								<input
+									type="text"
+									name="agent[name]"
+									id="agent_name"
+									class="form-control"
+									value={ agent.Name }
+								/>
+							</div>
+							<!-- Schedule -->
+							<div class="form-group">
+								<label>Schedule</label>
+								<div class="schedule-region" data-can-be-scheduled={ fmt.Sprintf("%v", agent.CanBeScheduled) }>
+									<div class="can-be-scheduled">
+										<select name="agent[schedule]" class="form-control">
+											for _, s := range schedules {
+												<option value={ s[1] } selected?={ agent.Schedule == s[1] }>
+													{ s[0] }
+												</option>
+											}
+										</select>
+									</div>
+									<span class="cannot-be-scheduled text-info" style="display:none;">
+										This type of Agent cannot be scheduled.
+									</span>
+								</div>
+							</div>
+							<!-- Keep events -->
+							<div class="event-related-region" data-can-create-events={ fmt.Sprintf("%v", agent.CanCreateEvents) }>
+								<div class="form-group">
+									<label>Keep events</label>
+									<select name="agent[keep_events_for]" class="form-control">
+										for _, s := range retentionSchedules {
+											<option value={ s[1] } selected?={ fmt.Sprintf("%d", agent.KeepEventsFor) == s[1] }>
+												{ s[0] }
+											</option>
+										}
+									</select>
+								</div>
+							</div>
+							<!-- Sources -->
+							<div class="form-group">
+								<label>Sources</label>
+								<div class="link-region" data-can-receive-events={ fmt.Sprintf("%v", agent.CanReceiveEvents) }>
+									<select name="agent[source_ids][]" multiple size="5" class="select2-linked-tags form-control" data-url-prefix="/agents">
+										for _, a := range allAgents {
+											if a.CanCreateEvents && a.ID != agent.ID {
+												<option value={ fmt.Sprintf("%d", a.ID) } selected?={ containsInt(agent.SourceIDs, a.ID) }>
+													{ a.Name }
+												</option>
+											}
+										}
+									</select>
+									<span class="cannot-receive-events text-info" style="display:none;">
+										This type of Agent cannot receive events.
+									</span>
+									<label class="propagate-immediately">
+										Propagate immediately
+										<input
+											type="checkbox"
+											name="agent[propagate_immediately]"
+											value="1"
+											checked?={ agent.PropagateImmediately }
+										/>
+									</label>
+								</div>
+							</div>
+							<!-- Receivers -->
+							<div class="form-group">
+								<label>Receivers</label>
+								<div class="event-related-region">
+									<select name="agent[receiver_ids][]" multiple size="5" class="select2-linked-tags form-control" data-url-prefix="/agents">
+										for _, a := range allAgents {
+											if a.CanReceiveEvents && a.ID != agent.ID {
+												<option value={ fmt.Sprintf("%d", a.ID) } selected?={ containsInt(agent.ReceiverIDs, a.ID) }>
+													{ a.Name }
+												</option>
+											}
+										}
+									</select>
+									<span class="cannot-create-events text-info" style="display:none;">
+										This type of Agent cannot create events.
+									</span>
+								</div>
+							</div>
+							<!-- Scenarios -->
+							if len(scenarios) > 0 {
+								<div class="form-group">
+									<label>Scenarios</label>
+									<select name="agent[scenario_ids][]" multiple size="5" class="select2-linked-tags form-control" data-url-prefix="/scenarios">
+										for _, s := range scenarios {
+											<option value={ fmt.Sprintf("%d", s.ID) } selected?={ containsInt(agent.ScenarioIDs, s.ID) }>
+												{ s.Name }
+											</option>
+										}
+									</select>
+								</div>
+							}
+						</div>
+						<!-- Options (JSON editor) -->
+						<div class="col-md-12 agent-options">
+							<div class="form-group">
+								<label>Options</label>
+								<textarea
+									name="agent[options]"
+									class="form-control live-json-editor"
+									rows="12"
+									style="font-family:monospace;"
+								>{ optionsJSON(agent) }</textarea>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Right column: description + event descriptions -->
+			<div class="col-md-6">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="well description">
+							if !isNew {
+								<p class="text-muted"><em>Agent description will appear here after selecting a type.</em></p>
+							} else {
+								<p class="text-muted"><em>Select an agent type to see its description.</em></p>
+							}
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="well event-descriptions" style="display:none;"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Submit buttons -->
+		<div class="row" style="margin-top:20px;">
+			<div class="col-md-12">
+				<div class="form-actions">
+					if isNew {
+						<input type="submit" value="Save Agent" class="btn btn-primary"/>
+					} else {
+						<input type="submit" value="Update Agent" class="btn btn-primary"/>
+					}
+					if agent.CanDryRun {
+						<button type="button" class="btn btn-default" onclick="Utils.handleDryRunButton(this)" data-action-url={ fmt.Sprintf("/agents/%d/dry_runs", agent.ID) } data-with-event-mode="no">
+							Dry Run
+						</button>
+					}
+				</div>
+			</div>
+		</div>
+	</form>
+}
+
+func formAction(agent models.Agent, isNew bool) templ.SafeURL {
+	if isNew {
+		return "/agents"
+	}
+	return templ.SafeURL(fmt.Sprintf("/agents/%d", agent.ID))
+}
+
+func agentTypeName(t string) string {
+	// "Agents::WeatherAgent" -> "Weather Agent"
+	if len(t) > 8 && t[:8] == "Agents::" {
+		name := t[8:]
+		// insert spaces before capitals
+		var result []rune
+		for i, c := range name {
+			if i > 0 && c >= 'A' && c <= 'Z' {
+				result = append(result, ' ')
+			}
+			result = append(result, c)
+		}
+		return string(result)
+	}
+	return t
+}
+
+func optionsJSON(agent models.Agent) string {
+	if agent.Options == nil {
+		return "{}"
+	}
+	b, err := json.MarshalIndent(agent.Options, "", "  ")
+	if err != nil {
+		return "{}"
+	}
+	return string(b)
+}
+
+func containsInt(slice []int, val int) bool {
+	for _, v := range slice {
+		if v == val {
+			return true
+		}
+	}
+	return false
+}
+
+

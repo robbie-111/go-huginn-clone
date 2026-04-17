@@ -1,0 +1,237 @@
+/* Huginn Application CSS */
+/* Bootstrap 3 is loaded via CDN in base.templ */
+
+body { padding-top: 60px; }
+
+#main {
+  margin-bottom: 100px;
+}
+
+.well.description table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+.well.description h1 { font-size: 30px; }
+.well.description h2 { font-size: 26px; }
+.well.description h3 { font-size: 22px; }
+
+/* Rails scaffold compatibility */
+#error_explanation { color: #f00; }
+#error_explanation ul { list-style: none; margin: 0 0 18px 0; }
+
+.modal-body pre { white-space: pre-wrap; }
+
+.select2 { float: none !important; margin-left: 0 !important; }
+
+img.odin { position: relative; top: -32px; }
+
+.link-region .cannot-receive-events,
+.schedule-region .cannot-be-scheduled {
+  display: none;
+}
+
+.spinner { display: none; vertical-align: bottom; }
+.hidden { display: none; }
+
+#show-tabs {
+  margin-top: 10px;
+  height: 400px;
+}
+
+.digraph { margin-top: 20px; }
+.show-view { overflow: hidden; }
+
+span.not-applicable:after {
+  color: #bbbbbb;
+  content: "n/a";
+}
+
+/* Dry Run Results Tabs */
+.nav.agent-dry-run-tabs { margin-bottom: 20px; }
+
+/* Navbar */
+.nav > li.job-indicator,
+.nav > li#event-indicator {
+  display: none;
+}
+.nav > li.job-indicator a,
+.nav > li#event-indicator a {
+  padding-right: 4px;
+  padding-left: 4px;
+}
+
+/* Flash */
+.flash {
+  position: fixed;
+  width: 310px;
+  z-index: 99999;
+  right: 20px;
+  top: 70px;
+}
+
+/* Logs */
+#logs .action-icon {
+  height: 16px;
+  display: inline-block;
+  vertical-align: inherit;
+  cursor: pointer;
+}
+#logs .action-icon.refresh { margin: 0 10px; }
+#show-tabs li a.recent-errors { font-weight: bold; }
+
+/* Memory */
+#memory .action-icon { display: inline-block; cursor: pointer; }
+
+/* ACE Editor */
+#ace-credential-value { position: relative; width: 940px; height: 300px; }
+.ace-editor { position: relative; width: 550px; height: 300px; }
+
+/* Disabled agents */
+.agent-unavailable { opacity: 0.5; }
+
+/* JSON Editor */
+.json-editor-shell {
+  border: 1px solid #ccd3db;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.json-editor-shell:focus-within {
+  border-color: #66afe9;
+  box-shadow: 0 0 0 3px rgba(102, 175, 233, 0.15);
+}
+.json-editor-shell.has-error {
+  border-color: #d9534f;
+  box-shadow: 0 0 0 3px rgba(217, 83, 79, 0.12);
+}
+.json-editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e7ebf0;
+  background: linear-gradient(180deg, #fbfcfd 0%, #f4f7fa 100%);
+}
+.json-editor-status { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: #5f6b7a; }
+.json-editor-status.is-error { color: #d9534f; }
+.json-editor-actions { display: flex; gap: 6px; }
+.json-editor-mode.active { color: #fff; background: #5bc0de; border-color: #46b8da; }
+.json-editor-host { width: 100%; min-height: 200px; }
+.json-editor-host .jse-main { height: 100%; border: 0; box-shadow: none; }
+
+/* Position tweaks */
+.hover-help { top: 2px; }
+.popover dd { margin-left: 1em; }
+.page-header .btn-group { position: relative; top: -5px; left: 4px; }
+
+h2 .scenario,
+a span.label.scenario {
+  position: relative;
+  top: -2px;
+}
+
+/* Bootstrap color styles */
+.color-danger { color: #d9534f; }
+.color-warning { color: #f0ad4e; }
+.color-success { color: #5cb85c; }
+
+/* Service visibility toggle (CSS-only toggle switch) */
+.service-visibility-toggle {
+  align-items: center;
+  color: inherit;
+  display: inline-flex;
+  text-decoration: none;
+}
+.service-visibility-toggle:hover,
+.service-visibility-toggle:focus {
+  color: inherit;
+  text-decoration: none;
+}
+.service-visibility-toggle-track {
+  background: #d7dce2;
+  border-radius: 999px;
+  display: inline-flex;
+  padding: 2px;
+  transition: background-color 0.2s ease;
+  width: 34px;
+}
+.service-visibility-toggle-thumb {
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  display: block;
+  height: 16px;
+  transform: translateX(0);
+  transition: transform 0.2s ease;
+  width: 16px;
+}
+.service-visibility-toggle.is-on .service-visibility-toggle-track { background: #5cb85c; }
+.service-visibility-toggle.is-on .service-visibility-toggle-thumb { transform: translateX(14px); }
+
+/* Scenario labels */
+span.label.scenario { display: inline-block; }
+
+/* Service provider buttons */
+.btn-service {
+  position: relative;
+  padding-left: 40px;
+  border-color: rgba(0,0,0,0.2);
+  color: #fff;
+}
+.btn-service > i:first-child,
+.btn-service > span:first-child {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 32px; height: 32px;
+  text-align: center;
+  line-height: 32px;
+  font-size: 18px;
+  border-right: 1px solid rgba(0,0,0,0.2);
+}
+.btn-service.service-twitter  { background-color: #55acee; }
+.btn-service.service-github   { background-color: #444444; }
+.btn-service.service-tumblr   { background-color: #2c4762; }
+.btn-service.service-dropbox  { background-color: #007EE5; }
+.btn-service.service-evernote { background-color: #00C85A; }
+.btn-service.service-google   { background-color: #4285F4; }
+
+/* Typeahead search */
+.tt-menu {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.2);
+  border-radius: 4px;
+  box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  min-width: 200px;
+  padding: 5px 0;
+}
+.tt-suggestion { padding: 6px 14px; cursor: pointer; }
+.tt-suggestion:hover, .tt-suggestion.tt-cursor { background: #0097cf; color: #fff; }
+
+/* Table row middle alignment */
+.table-row-middle td { vertical-align: middle; }
+
+/* 원본 Huginn 로컬 Bootstrap과 동일하게: CDN Bootstrap 3.4.1은
+   table-responsive에 overflow-x:auto를 미디어 쿼리 없이 항상 적용해
+   dropdown이 잘리는 문제가 발생함. overflow: visible로 덮어씀. */
+.table-responsive {
+    overflow: visible;
+}
+
+/* Diagram */
+.digraph svg { font-family: sans-serif; }
+
+/* Page header with action buttons */
+.page-header h2 .btn-group { margin-left: 10px; }
+
+/* Agent show tabs */
+.agent-show #show-tabs { min-height: 300px; }
+
+/* Icon colors */
+.icon-white { color: #fff; }
+.icon-yellow { color: #f0ad4e; }
+
+/* Highlighted event row */
+tr.hl td { background-color: #fcf8e3; }

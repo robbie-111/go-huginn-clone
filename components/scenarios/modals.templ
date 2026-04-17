@@ -1,0 +1,90 @@
+package scenarios
+
+import (
+	"fmt"
+	"go-huginn-clone/models"
+)
+
+templ ConfirmDeletionModal(scenario models.Scenario) {
+	<div
+		id={ fmt.Sprintf("confirm-scenario-deletion-%d", scenario.ID) }
+		class="modal fade"
+		tabindex="-1"
+		role="dialog"
+		aria-hidden="true"
+	>
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form action={ templ.SafeURL(fmt.Sprintf("/scenarios/%d", scenario.ID)) } method="POST">
+					<input type="hidden" name="_method" value="DELETE"/>
+					<input type="hidden" name="csrf_token" value="mock-csrf-token"/>
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">
+							How do you want to delete the Scenario &#39;{ scenario.Name }&#39;?
+						</h4>
+					</div>
+					<div class="modal-body">
+						<div class="radio">
+							<label>
+								<input type="radio" name="mode" value="" checked/>
+								<h4><span class="label label-success">Scenario only</span></h4>
+								Only delete the Scenario, keep the Agents.
+							</label>
+						</div>
+						<div class="radio">
+							<label>
+								<input type="radio" name="mode" value="unique_agents"/>
+								<h4><span class="label label-warning">Scenario and unique Agents</span></h4>
+								Also deletes Agents that are used in this Scenario only.
+							</label>
+						</div>
+						<div class="radio">
+							<label>
+								<input type="radio" name="mode" value="all_agents"/>
+								<h4><span class="label label-danger">Scenario and all included Agents</span></h4>
+								Deletes Scenario and all included Agents, even if they are used in different Scenarios.
+							</label>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+						<button type="submit" class="btn btn-danger">Delete</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+}
+
+templ EnableAgentsModal(scenario models.Scenario) {
+	<div id="enable-disable-agents" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title">Confirm</h4>
+				</div>
+				<div class="modal-body">
+					<p id="enable-disable-agents-message"></p>
+				</div>
+				<div class="modal-footer">
+					<form
+						action={ templ.SafeURL(fmt.Sprintf("/scenarios/%d/enable_or_disable_all_agents", scenario.ID)) }
+						method="POST"
+					>
+						<input type="hidden" name="_method" value="PUT"/>
+						<input type="hidden" name="csrf_token" value="mock-csrf-token"/>
+						<input type="hidden" name="scenario[disabled]" value="" id="scenario-disabled-value"/>
+						<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+						<button type="submit" class="btn btn-primary">Yes</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+}

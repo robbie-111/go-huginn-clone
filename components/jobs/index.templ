@@ -1,0 +1,119 @@
+package jobs
+
+import (
+	"fmt"
+	"go-huginn-clone/components"
+	"go-huginn-clone/components/layouts"
+	"go-huginn-clone/models"
+	"time"
+)
+
+templ Index(props layouts.PageProps, jobList []models.Job, pagination models.Pagination) {
+	@layouts.Base(props) {
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="page-header">
+						<h2>Background Jobs</h2>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-striped table-row-middle events">
+							<tr>
+								<th>Status</th>
+								<th>Agent / Job</th>
+								<th>Created</th>
+								<th>Next Run</th>
+								<th>Attempts</th>
+								<th>Last Error</th>
+								<th></th>
+							</tr>
+							for _, job := range jobList {
+								<tr>
+									<td>
+										@components.JobStatusLabel(job)
+									</td>
+									<td>
+										{ components.AgentFromJob(job) }
+									</td>
+									<td title={ job.CreatedAt.String() }>
+										{ components.TimeAgo(job.CreatedAt) } ago
+									</td>
+									<td title={ job.RunAt.String() }>
+										if job.FailedAt == nil {
+											{ components.SafeTimeDiff(job.RunAt) }
+										}
+									</td>
+									<td>{ fmt.Sprintf("%d", job.Attempts) }</td>
+									<td>
+										if job.LastError != "" {
+											<a data-toggle="modal" data-target={ fmt.Sprintf("#error%d", job.ID) }>
+												{ components.Truncate(job.LastError, 90) }
+											</a>
+											<!-- Error modal -->
+											<div class="modal fade" id={ fmt.Sprintf("error%d", job.ID) } tabindex="-1" role="dialog" aria-hidden="true">
+												<div class="modal-dialog" style="max-width:800px;">
+													<div class="modal-content">
+														<div class="modal-header">
+															<button type="button" class="close" data-dismiss="modal">
+																<span aria-hidden="true">&times;</span>
+															</button>
+															<h4 class="modal-title">Error Backtrace</h4>
+														</div>
+														<div class="modal-body">
+															<pre style="white-space:pre-wrap;">{ job.LastError }</pre>
+														</div>
+													</div>
+												</div>
+											</div>
+										}
+									</td>
+									<td>
+										if isActionable(job) {
+											<div class="btn-group btn-group-xs" style="float:right; display:flex;">
+												if job.RunAt.After(time.Now()) || job.FailedAt != nil {
+													<a
+														href={ templ.SafeURL(fmt.Sprintf("/jobs/%d/run", job.ID)) }
+														class="btn btn-default"
+														data-method="put"
+													>Run now</a>
+												}
+												<a
+													href={ templ.SafeURL(fmt.Sprintf("/jobs/%d", job.ID)) }
+													class="btn btn-danger"
+													data-method="delete"
+													data-confirm="Really delete this job?"
+												>Delete</a>
+											</div>
+										}
+									</td>
+								</tr>
+							}
+						</table>
+					</div>
+					@components.Paginate(pagination)
+					<br/>
+					<div class="btn-group">
+						<a href="/jobs/destroy_failed" class="btn btn-default" data-method="delete">
+							<span class="glyphicon glyphicon-trash"></span> Remove failed jobs
+						</a>
+						<a href="/jobs/retry_queued" class="btn btn-default" data-method="post">
+							<span class="glyphicon glyphicon-refresh"></span> Retry queued jobs
+						</a>
+						<a
+							href="/jobs/destroy_all"
+							class="btn btn-default"
+							data-method="delete"
+							data-confirm="Are you sure you want to delete ALL pending jobs for all Huginn users?"
+						>
+							<span class="glyphicon glyphicon-remove"></span> Remove all jobs
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+func isActionable(job models.Job) bool {
+	return (job.LockedAt == nil && job.LockedBy == "") || job.FailedAt != nil
+}

@@ -1,0 +1,110 @@
+package scenario_imports
+
+import (
+	"go-huginn-clone/components/layouts"
+	"go-huginn-clone/models"
+)
+
+templ NewPage(props layouts.PageProps, si models.ScenarioImport) {
+	@layouts.Base(props) {
+		<div class="container scenario-import">
+			<div class="row">
+				<div class="col-md-12">
+					if len(si.Errors) > 0 {
+						<div class="row well">
+							<h2>Errors:</h2>
+							for _, msg := range si.Errors {
+								<p class="text-warning">{ msg }</p>
+							}
+						</div>
+					}
+				</div>
+			</div>
+			<form action="/scenario_imports" method="POST" enctype="multipart/form-data">
+				<input type="hidden" name="csrf_token" value="mock-csrf-token"/>
+				if si.Step == 1 || si.Step == 0 {
+					@StepOne()
+				} else {
+					@StepTwo(si)
+				}
+			</form>
+			<hr/>
+			<div class="row">
+				<div class="col-md-12">
+					<a href="/scenarios" class="btn btn-default">
+						<span class="glyphicon glyphicon-chevron-left"></span> Back
+					</a>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ StepOne() {
+	<div class="row">
+		<div class="page-header">
+			<h2>Import a Public Scenario</h2>
+		</div>
+	</div>
+	<div class="row">
+		<blockquote>
+			You can import Scenarios, either from a <code>.json</code> file, or via a public
+			Scenario URL. When you import a Scenario, Huginn will keep track of where it came from and
+			later let you update it.
+		</blockquote>
+	</div>
+	<div class="row">
+		<div class="col-md-4">
+			<div class="form-group">
+				<label for="scenario_import_url">Option 1: Provide a Public Scenario URL</label>
+				<input type="text" name="scenario_import[url]" id="scenario_import_url" class="form-control" placeholder="Public Scenario URL"/>
+			</div>
+			<div class="form-group">
+				<label for="scenario_import_file">Option 2: Upload a Scenario JSON File</label>
+				<input type="file" name="scenario_import[file]" id="scenario_import_file" class="form-control"/>
+			</div>
+			<div class="form-actions">
+				<input type="submit" value="Start Import" class="btn btn-primary"/>
+			</div>
+		</div>
+	</div>
+}
+
+templ StepTwo(si models.ScenarioImport) {
+	<div class="row">
+		<div class="col-md-12">
+			if si.Dangerous {
+				<div class="alert alert-danger">
+					<span class="glyphicon glyphicon-warning-sign"></span>
+					This Scenario contains one or more potentially dangerous Agents.
+					These may be able to run local commands or execute code.
+					Please be sure that you understand the Agent configurations before importing!
+				</div>
+			}
+			if si.ExistingScenario != nil {
+				<div class="alert alert-warning">
+					<span class="glyphicon glyphicon-warning-sign"></span>
+					This Scenario already exists in your system. The import will update your existing
+					<strong>{ si.ExistingScenario.Name }</strong> Scenario.
+				</div>
+			}
+			<div class="page-header">
+				<h2>Importing Scenario</h2>
+			</div>
+			<input type="hidden" name="scenario_import[data]" value={ si.Data }/>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="checkbox">
+						<label>
+							<input type="checkbox" name="scenario_import[do_import]" value="1"/>
+							I confirm that I want to import these Agents.
+						</label>
+					</div>
+					<div class="form-actions">
+						<input type="submit" value="Finish Import" class="btn btn-primary"/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}

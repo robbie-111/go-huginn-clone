@@ -1,0 +1,266 @@
+package agents
+
+import (
+	"fmt"
+	"go-huginn-clone/components"
+	"go-huginn-clone/components/layouts"
+	"go-huginn-clone/models"
+)
+
+templ Show(props layouts.PageProps, agent models.Agent, logs []models.AgentLog) {
+	@layouts.Base(props) {
+		<div class="container agent-show">
+			<div class="row">
+				<!-- Left: Tab navigation -->
+				<div class="col-md-2">
+					<ul class="nav nav-pills nav-stacked" id="show-tabs">
+						<li>
+							<a href="/agents">
+								<span class="glyphicon glyphicon-chevron-left"></span> Back
+							</a>
+						</li>
+						<li class="disabled">
+							<a>
+								<span class="glyphicon glyphicon-picture"></span> Summary
+							</a>
+						</li>
+						<li class="active">
+							<a href="#details" data-toggle="tab">
+								<span class="glyphicon glyphicon-indent-left"></span> Details
+							</a>
+						</li>
+						<li>
+							<a
+								href="#logs"
+								data-toggle="tab"
+								data-agent-id={ fmt.Sprintf("%d", agent.ID) }
+								class={ logsTabClass(agent) }
+							>
+								<span class="glyphicon glyphicon-list-alt"></span> Logs
+							</a>
+						</li>
+						if agent.CanCreateEvents && agent.EventsCount > 0 {
+							<li>
+								<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d/events", agent.ID)) }>
+									<span class="glyphicon glyphicon-random"></span> Events
+								</a>
+							</li>
+						} else {
+							<li class="disabled">
+								<a>
+									<span class="glyphicon glyphicon-random"></span> Events
+								</a>
+							</li>
+						}
+						<li class="dropdown">
+							<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+								<span class="glyphicon glyphicon-th-list"></span> Actions <span class="caret"></span>
+							</a>
+							@ActionMenu(agent, fmt.Sprintf("/agents/%d", agent.ID))
+						</li>
+					</ul>
+				</div>
+				<!-- Right: Tab content -->
+				<div class="col-md-10">
+					<div class="tab-content">
+						<!-- Details tab (active by default) -->
+						<div class="tab-pane active" id="details">
+							<h2>{ agent.Name } Details</h2>
+							<p>
+								<b>Type:</b> { agent.ShortType }
+							</p>
+							if agent.CanBeScheduled {
+								<p>
+									<b>Schedule:</b> { components.AgentScheduleName(agent.Schedule) }
+								</p>
+								<p>
+									<b>Last checked:</b>
+									if agent.LastCheckAt != nil {
+										{ components.TimeAgo(*agent.LastCheckAt) } ago
+									} else {
+										never
+									}
+								</p>
+							}
+							if len(agent.Controllers) > 0 {
+								<p>
+									<b>Controllers:</b>
+									for i, ctrl := range agent.Controllers {
+										<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d", ctrl.ID)) }>{ ctrl.Name }</a>
+										if i < len(agent.Controllers)-1 {
+											,&nbsp;
+										}
+									}
+								</p>
+							}
+							if agent.CanCreateEvents {
+								<p>
+									<b>Keep events:</b> { components.KeepEventsForLabel(agent.KeepEventsFor) }
+								</p>
+								<p>
+									<b>Last event created:</b>
+									if agent.LastEventAt != nil {
+										{ components.TimeAgo(*agent.LastEventAt) } ago
+									} else {
+										never
+									}
+								</p>
+							}
+							if agent.CanReceiveEvents {
+								<p>
+									<b>Last received event:</b>
+									if agent.LastReceiveAt != nil {
+										{ components.TimeAgo(*agent.LastReceiveAt) } ago
+									} else {
+										never
+									}
+								</p>
+							}
+							if agent.CanCreateEvents {
+								<p>
+									<b>Events created:</b>
+									<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d/events", agent.ID)) }>
+										{ fmt.Sprintf("%d", agent.EventsCount) }
+									</a>
+								</p>
+							}
+							if agent.Service != nil {
+								<p>
+									<b>Service:</b>
+									@components.ServiceLabel(agent.Service)
+								</p>
+							}
+							if agent.CanReceiveEvents {
+								<p>
+									<b>Event sources:</b>
+									if len(agent.Sources) > 0 {
+										for i, src := range agent.Sources {
+											<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d", src.ID)) }>{ src.Name }</a>
+											if i < len(agent.Sources)-1 {
+												,&nbsp;
+											}
+										}
+									} else {
+										None
+									}
+								</p>
+								<p>
+									<b>Propagate immediately:</b> { components.YesNo(agent.PropagateImmediately) }
+								</p>
+							}
+							if agent.CanCreateEvents {
+								<p>
+									<b>Event receivers:</b>
+									if len(agent.Receivers) > 0 {
+										for i, rcv := range agent.Receivers {
+											<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d", rcv.ID)) }>{ rcv.Name }</a>
+											if i < len(agent.Receivers)-1 {
+												,&nbsp;
+											}
+										}
+									} else {
+										None
+									}
+								</p>
+							}
+							if agent.CanControlOtherAgents {
+								<p>
+									<b>Control Targets:</b>
+									if len(agent.ControlTargets) > 0 {
+										for i, ct := range agent.ControlTargets {
+											<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d", ct.ID)) }>{ ct.Name }</a>
+											if i < len(agent.ControlTargets)-1 {
+												,&nbsp;
+											}
+										}
+									} else {
+										None
+									}
+								</p>
+							}
+							<p>
+								<b>Working:</b>
+								@components.WorkingStatus(agent)
+							</p>
+							<p>
+								<b>Options:</b>
+								<pre>{ components.PrettyJSON(agent.Options) }</pre>
+							</p>
+							if len(agent.Memory) > 0 {
+								<p id="memory" data-agent-id={ fmt.Sprintf("%d", agent.ID) }>
+									<b>Memory:</b>
+									<i class="fa-solid fa-spinner fa-spin-pulse spinner" style="display:none;"></i>
+									<i class="fa-solid fa-trash action-icon clear" style="cursor:pointer;"></i>
+									<a id="toggle-memory" href="#">Show</a>
+									<pre class="memory hidden">{ components.PrettyJSON(agent.Memory) }</pre>
+								</p>
+							}
+						</div>
+						<!-- Logs tab -->
+						<div class="tab-pane" id="logs" data-agent-id={ fmt.Sprintf("%d", agent.ID) }>
+							<div class="row">
+								<div class="col-md-12">
+									<h2>
+										{ agent.Name } Logs
+										<small>
+											<img src="/static/images/spinner-arrows.gif" class="spinner" style="display:none;"/>
+											<span class="glyphicon glyphicon-refresh action-icon refresh" style="cursor:pointer;margin:0 10px;"></span>
+											<span class="glyphicon glyphicon-trash action-icon clear" style="cursor:pointer;"></span>
+										</small>
+									</h2>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+									<div class="logs">
+										@LogsTable(logs)
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+func logsTabClass(agent models.Agent) string {
+	if agent.RecentErrors {
+		return "recent-errors"
+	}
+	return ""
+}
+
+templ LogsTable(logs []models.AgentLog) {
+	<div class="table-responsive">
+		<table class="table table-striped table-row-middle logs">
+			<tr>
+				<th>Message</th>
+				<th>When</th>
+				<th width="200px"></th>
+			</tr>
+			for _, log := range logs {
+				<tr>
+					<td>{ components.Truncate(log.Message, 200) }</td>
+					<td>{ components.TimeAgo(log.CreatedAt) } ago</td>
+					<td>
+						<div class="btn-group btn-group-xs">
+							if log.InboundEventID != nil {
+								<a href={ templ.SafeURL(fmt.Sprintf("/events/%d", *log.InboundEventID)) } class="btn btn-default">Event In</a>
+							} else {
+								<a href="#" class="btn btn-default disabled">Event In</a>
+							}
+							if log.OutboundEventID != nil {
+								<a href={ templ.SafeURL(fmt.Sprintf("/events/%d", *log.OutboundEventID)) } class="btn btn-default">Event Out</a>
+							} else {
+								<a href="#" class="btn btn-default disabled">Event Out</a>
+							}
+							<a href="#" class="btn btn-default show-log-details" data-modal-title="Info" data-modal-content={ log.Message }>Details</a>
+						</div>
+					</td>
+				</tr>
+			}
+		</table>
+	</div>
+}

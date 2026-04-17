@@ -1,0 +1,158 @@
+package agents
+
+import (
+	"fmt"
+	"go-huginn-clone/models"
+)
+
+templ ActionMenu(agent models.Agent, returnTo string) {
+	<ul class="dropdown-menu" role="menu">
+		if agent.CanBeScheduled {
+			<li>
+				<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d/run?return=%s", agent.ID, returnTo)) } data-method="post" tabindex="-1">
+					<span class="glyphicon glyphicon-refresh" style="color:#5cb85c;"></span> Run
+				</a>
+			</li>
+		}
+		if agent.CanDryRun {
+			<li>
+				<a
+					href="#"
+					data-action-url={ fmt.Sprintf("/agents/%d/dry_runs", agent.ID) }
+					data-with-event-mode="no"
+					tabindex="-1"
+					onclick="Utils.handleDryRunButton(this); return false;"
+				>
+					<span class="glyphicon glyphicon-refresh"></span> Dry Run
+				</a>
+			</li>
+		}
+		<li>
+			<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d?return=%s", agent.ID, returnTo)) }>
+				<span class="glyphicon glyphicon-eye-open"></span> Show
+			</a>
+		</li>
+		<li class="divider"></li>
+		<li>
+			<a href={ templ.SafeURL(fmt.Sprintf("/agents/%d/edit?return=%s", agent.ID, returnTo)) }>
+				<span class="glyphicon glyphicon-pencil"></span> Edit agent
+			</a>
+		</li>
+		<li>
+			<a href={ templ.SafeURL(fmt.Sprintf("/agents/new?id=%d", agent.ID)) } tabindex="-1">
+				<span class="fa-solid fa-copy"></span> Clone agent
+			</a>
+		</li>
+		<li>
+			<a href="#" data-toggle="modal" data-target={ fmt.Sprintf("#confirm-agent-enable-disable%d", agent.ID) }>
+				if agent.Disabled {
+					<span class="glyphicon glyphicon-play"></span> Enable agent
+				} else {
+					<span class="glyphicon glyphicon-pause"></span> Disable agent
+				}
+			</a>
+		</li>
+		if len(agent.Scenarios) > 0 {
+			<li class="divider"></li>
+			for _, scenario := range agent.Scenarios {
+				<li>
+					<a
+						href={ templ.SafeURL(fmt.Sprintf("/agents/%d/leave_scenario?scenario_id=%d&return=%s", agent.ID, scenario.ID, returnTo)) }
+						data-method="put"
+						tabindex="-1"
+					>
+						<span class="glyphicon glyphicon-remove-circle" style="color:#f0ad4e;"></span>
+						Remove from { scenario.Name }
+					</a>
+				</li>
+			}
+		}
+		if agent.CanCreateEvents && agent.EventsCount > 0 {
+			<li class="divider"></li>
+			<li>
+				<a href="#" data-toggle="modal" data-target={ fmt.Sprintf("#confirm-agent-reemit-events%d", agent.ID) }>
+					<span class="glyphicon glyphicon-refresh"></span> Re-emit all events
+				</a>
+			</li>
+		}
+		<li class="divider"></li>
+		if agent.CanCreateEvents && agent.EventsCount > 0 {
+			<li>
+				<a
+					href={ templ.SafeURL(fmt.Sprintf("/agents/%d/remove_events?return=%s", agent.ID, returnTo)) }
+					data-method="delete"
+					data-confirm="Are you sure you want to delete ALL emitted events for this Agent?"
+					tabindex="-1"
+				>
+					<span class="glyphicon glyphicon-trash" style="color:#d9534f;"></span> Delete all events
+				</a>
+			</li>
+		}
+		<li>
+			<a
+				href={ templ.SafeURL(fmt.Sprintf("/agents/%d?return=%s", agent.ID, returnTo)) }
+				data-method="delete"
+				data-confirm="Are you sure that you want to permanently delete this Agent?"
+				tabindex="-1"
+			>
+				<span class="glyphicon glyphicon-remove" style="color:#d9534f;"></span> Delete agent
+			</a>
+		</li>
+	</ul>
+	<!-- Enable/Disable modal -->
+	<div id={ fmt.Sprintf("confirm-agent-enable-disable%d", agent.ID) } class="confirm-agent modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title">Confirm</h4>
+				</div>
+				<div class="modal-body">
+					<p>
+						if agent.Disabled {
+							Enable
+						} else {
+							Disable
+						}
+						&quot;{ agent.Name }&quot;?
+					</p>
+				</div>
+				<div class="modal-footer">
+					<form action={ templ.SafeURL(fmt.Sprintf("/agents/%d", agent.ID)) } method="POST">
+						<input type="hidden" name="_method" value="PUT"/>
+						<input type="hidden" name="agent[disabled]" value={ fmt.Sprintf("%v", !agent.Disabled) }/>
+						<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+						<button type="submit" class="btn btn-primary">Yes</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Re-emit events modal -->
+	if agent.CanCreateEvents && agent.EventsCount > 0 {
+		<div id={ fmt.Sprintf("confirm-agent-reemit-events%d", agent.ID) } class="confirm-agent modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">Confirm</h4>
+					</div>
+					<div class="modal-body">
+						<p>Re-emit all events for &quot;{ agent.Name }&quot;?</p>
+					</div>
+					<div class="modal-footer">
+						<form action={ templ.SafeURL(fmt.Sprintf("/agents/%d/reemit_events", agent.ID)) } method="POST">
+							<div class="form-group">
+								<label>
+									<input type="checkbox" name="delete_old_events"/> Delete old events
+								</label>
+							</div>
+							<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+							<button type="submit" class="btn btn-primary">Re-emit all events</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
