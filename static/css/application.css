@@ -22,6 +22,8 @@ body { padding-top: 60px; }
 
 .modal-body pre { white-space: pre-wrap; }
 
+.big-modal-dialog { width: 90% !important; }
+
 .select2 { float: none !important; margin-left: 0 !important; }
 
 img.odin { position: relative; top: -32px; }

@@ -186,7 +186,7 @@ func Index(props layouts.PageProps, jobList []models.Job, pagination models.Pagi
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\"><div class=\"modal-dialog\" style=\"max-width:800px;\"><div class=\"modal-content\"><div class=\"modal-header\"><button type=\"button\" class=\"close\" data-dismiss=\"modal\"><span aria-hidden=\"true\">&times;</span></button><h4 class=\"modal-title\">Error Backtrace</h4></div><div class=\"modal-body\"><pre style=\"white-space:pre-wrap;\">")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\"><div class=\"modal-dialog big-modal-dialog\"><div class=\"modal-content\"><div class=\"modal-header\"><button type=\"button\" class=\"close\" data-dismiss=\"modal\"><span aria-hidden=\"true\">&times;</span></button><h4 class=\"modal-title\">Error Backtrace</h4></div><div class=\"modal-body\"><pre style=\"white-space:pre-wrap;\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
