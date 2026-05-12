@@ -203,8 +203,8 @@ func ScenarioLabel(scenario models.Scenario) templ.Component {
 		icon = "gear"
 	}
 	html := fmt.Sprintf(
-		`<span class="label scenario" style="background-color:%s;color:%s;"><span class="fa-solid fa-%s"></span> %s</span>`,
-		bgColor, fgColor, icon, scenario.Name,
+		`<a href="/scenarios/%d" class="label scenario" style="background-color:%s;color:%s;"><span class="fa-solid fa-%s"></span> %s</a>`,
+		scenario.ID, bgColor, fgColor, icon, scenario.Name,
 	)
 	return templ.Raw(html)
 }

@@ -36,6 +36,7 @@ $(function () {
     trigger: 'hover',
     html: true,
     placement: 'right',
+    container: 'body',
   });
 
   // Flash messages: auto-hide after 5 seconds

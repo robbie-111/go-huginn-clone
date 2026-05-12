@@ -46,7 +46,7 @@ templ Index(props layouts.PageProps, serviceList []models.Service, serviceAgentC
 								</th>
 								<th>
 									@components.SortableColumn(sortCol, sortDir, "global", "desc", "Global?", "/services")
-									<span class="glyphicon glyphicon-question-sign hover-help" data-content="Private services are available only to you. Global services are available to all users."></span>
+									<span class="glyphicon glyphicon-question-sign hover-help" data-toggle="popover" data-trigger="hover" data-placement="right" title="" data-content="Private services are available only to you. Global services are available to all users."></span>
 								</th>
 								<th></th>
 							</tr>
