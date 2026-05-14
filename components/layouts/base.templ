@@ -13,8 +13,9 @@ type PageProps struct {
 	ExtraHead      string // raw HTML for <head> (e.g. Google Maps script)
 	LoadAceEditor  bool
 	LoadJSONEditor bool
-	LoadDiagram    bool
-	LoadGraphing   bool
+	LoadDiagram      bool
+	LoadGraphing     bool
+	LoadAgentShowPage bool
 }
 
 templ Base(props PageProps) {
@@ -105,8 +106,13 @@ templ Base(props PageProps) {
 				<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 				<script src="/static/js/graphing.js"></script>
 			}
+			<!-- Utils JS (global) -->
+			<script src="/static/js/components/utils.js"></script>
 			<!-- Application JS -->
 			<script src="/static/js/application.js"></script>
+			if props.LoadAgentShowPage {
+				<script src="/static/js/pages/agent-show-page.js"></script>
+			}
 			<!-- Inline agent data for Typeahead search -->
 			<script>
 				window.agentPaths = {};

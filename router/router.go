@@ -66,7 +66,7 @@ func New() http.Handler {
 
 		// Agent logs
 		r.Get("/agents/{agent_id}/logs", handlers.AgentsLogsIndex)
-		r.Delete("/agents/{agent_id}/logs/clear", handlers.AgentsLogsClear)
+		r.Post("/agents/{agent_id}/logs/clear", handlers.AgentsLogsClear)
 
 		// Agent events
 		r.Get("/agents/{agent_id}/events", handlers.AgentEventsIndex)

@@ -40,7 +40,8 @@ func AgentsShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	props := makeProps(w, r, agent.Name)
-	logs := models.MockLogs(agent.ID)
+	props.LoadAgentShowPage = true
+	logs := models.LoadLogs(agent.ID)
 	agentComponents.Show(props, *agent, logs).Render(r.Context(), w)
 }
 
@@ -183,10 +184,13 @@ func AgentsDryRunCreate(w http.ResponseWriter, r *http.Request) {
 func AgentsLogsIndex(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "agent_id")
 	id, _ := strconv.Atoi(idStr)
-	logs := models.MockLogs(id)
+	logs := models.LoadLogs(id)
 	agentComponents.LogsTable(logs).Render(r.Context(), w)
 }
 
 func AgentsLogsClear(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+	idStr := chi.URLParam(r, "agent_id")
+	id, _ := strconv.Atoi(idStr)
+	_ = models.ClearLogs(id)
+	agentComponents.LogsTable([]models.AgentLog{}).Render(r.Context(), w)
 }

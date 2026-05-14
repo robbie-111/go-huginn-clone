@@ -14,15 +14,16 @@ import (
 
 // PageProps holds page-level metadata passed from handlers
 type PageProps struct {
-	Title          string
-	CurrentUser    *models.User
-	Flash          []models.FlashMessage
-	CurrentPath    string
-	ExtraHead      string // raw HTML for <head> (e.g. Google Maps script)
-	LoadAceEditor  bool
-	LoadJSONEditor bool
-	LoadDiagram    bool
-	LoadGraphing   bool
+	Title             string
+	CurrentUser       *models.User
+	Flash             []models.FlashMessage
+	CurrentPath       string
+	ExtraHead         string // raw HTML for <head> (e.g. Google Maps script)
+	LoadAceEditor     bool
+	LoadJSONEditor    bool
+	LoadDiagram       bool
+	LoadGraphing      bool
+	LoadAgentShowPage bool
 }
 
 func Base(props PageProps) templ.Component {
@@ -58,7 +59,7 @@ func Base(props PageProps) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(props.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/layouts/base.templ`, Line: 27, Col: 24}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/layouts/base.templ`, Line: 28, Col: 24}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -146,7 +147,17 @@ func Base(props PageProps) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<!-- Application JS --><script src=\"/static/js/application.js\"></script><!-- Inline agent data for Typeahead search --><script>\n\t\t\t\twindow.agentPaths = {};\n\t\t\t\twindow.agentNames = [];\n\t\t\t\tif (typeof agentData !== 'undefined') {\n\t\t\t\t\t$.extend(window.agentPaths, agentData);\n\t\t\t\t\t$.each(window.agentPaths, function(name) { window.agentNames.push(name); });\n\t\t\t\t}\n\t\t\t</script></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<!-- Utils JS (global) --><script src=\"/static/js/components/utils.js\"></script><!-- Application JS --><script src=\"/static/js/application.js\"></script>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if props.LoadAgentShowPage {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<script src=\"/static/js/pages/agent-show-page.js\"></script>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "<!-- Inline agent data for Typeahead search --><script>\n\t\t\t\twindow.agentPaths = {};\n\t\t\t\twindow.agentNames = [];\n\t\t\t\tif (typeof agentData !== 'undefined') {\n\t\t\t\t\t$.extend(window.agentPaths, agentData);\n\t\t\t\t\t$.each(window.agentPaths, function(name) { window.agentNames.push(name); });\n\t\t\t\t}\n\t\t\t</script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -138,7 +138,7 @@ func Index(props layouts.PageProps, serviceList []models.Service, serviceAgentCo
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<span class=\"glyphicon glyphicon-question-sign hover-help\" data-content=\"Private services are available only to you. Global services are available to all users.\"></span></th><th></th></tr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<span class=\"glyphicon glyphicon-question-sign hover-help\" data-toggle=\"popover\" data-trigger=\"hover\" data-placement=\"right\" title=\"\" data-content=\"Private services are available only to you. Global services are available to all users.\"></span></th><th></th></tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
+	"go-huginn-clone/models"
 	"go-huginn-clone/router"
 )
 
@@ -25,6 +27,10 @@ func findAvailablePort(startPort int) int {
 }
 
 func main() {
+	// Seed initial logs and start background log scheduler
+	models.SeedInitialLogs()
+	go models.StartLogScheduler(30 * time.Second)
+
 	r := router.New()
 
 	startPort := 3001
